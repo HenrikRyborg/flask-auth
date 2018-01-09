@@ -44,6 +44,18 @@ class accountUser(db.Model):
     def get_id(self):
         return str(self.id)
 
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+departments_users = db.Table('departments_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('department_id', db.Integer(), db.ForeignKey('department.id')))
+
+groups_users = db.Table('groups_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('group_id', db.Integer(), db.ForeignKey('group.id')))
+
 class user(db.Model):
     __tablename__ = 'user'
 

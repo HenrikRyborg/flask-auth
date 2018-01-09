@@ -36,3 +36,6 @@ from .auth import auth as auth_blueprint
 ## Register blueprints
 app.register_blueprint(indexBP, url_prefix='')
 app.register_blueprint(auth_blueprint, url_prefix='')
+
+## Import models
+from .models import *
