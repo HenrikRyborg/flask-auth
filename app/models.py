@@ -1,25 +1,29 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from app import db, login_manager
+
+accountUserRoles = db.Table('accountUserRoles',
+    db.Column('roleID', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+    db.Column('accountUserID', db.Integer, db.ForeignKey('accountUser.id'), primary_key=True)
+)
 
 class account(db.Model):
     __tablename__ = 'account'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60), index=True, unique=True)
-    users = db.relationship('user', backref='account', lazy='dynamic')
-    departments = db.relationship('department', backref='account', lazy='dynamic')
+    name = db.Column(db.String(60), unique=True, nullable=False)
 
 class accountUser(db.Model):
     __tablename__ = 'accountUser'
+    __table_args__ = (db.UniqueConstraint("accountID", "userID"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    password_hash = db.Column(db.String(128))
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
-    is_admin = db.Column(db.Boolean, default=False)
-    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
+    accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    passwordHash = db.Column(db.String(128), nullable=False)
+    isAdmin = db.Column(db.Boolean, default=False)
+
+    roles = db.relationship('role', secondary=accountUserRoles, lazy='subquery',
+                            backref=db.backref('accountUsers', lazy=True))
 
     @property
     def password(self):
@@ -27,10 +31,10 @@ class accountUser(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.passwordHash = generate_password_hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.passwordHash, password)
 
     def is_authenticated(self):
         return True
@@ -44,65 +48,33 @@ class accountUser(db.Model):
     def get_id(self):
         return str(self.id)
 
-roles_users = db.Table('roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
-
-departments_users = db.Table('departments_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('department_id', db.Integer(), db.ForeignKey('department.id')))
-
-groups_users = db.Table('groups_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('group_id', db.Integer(), db.ForeignKey('group.id')))
-
 class user(db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
-    email = db.Column(db.String(60), index=True, unique=True)
-    first_name = db.Column(db.String(60), index=True)
-    last_name = db.Column(db.String(60), index=True)
-
-    def __repr__(self):
-        return '<User: {}>'.format(self.name)
+    email = db.Column(db.String(60), unique=True, nullable=False)
+    firstName = db.Column(db.String(60))
+    lastName = db.Column(db.String(60))
 
 class role(db.Model):
     __tablename__ = 'role'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60), unique=True)
+    name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    users = db.relationship('user', backref='role', lazy='dynamic')
-
-    def __repr__(self):
-        return '<Role: {}>'.format(self.name)
 
 class department(db.Model):
     __tablename__ = 'department'
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
-    name = db.Column(db.String(60), unique=True)
+    accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    users = db.relationship('user', backref='department', lazy='dynamic')
-
-    def __repr__(self):
-        return '<Department: {}>'.format(self.name)
 
 class group(db.Model):
     __tablename__ = 'group'
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
-    name = db.Column(db.String(60), unique=True)
+    accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    users = db.relationship('user', backref='group', lazy='dynamic')
-
-    def __repr__(self):
-        return '<Group: {}>'.format(self.name)
-
-@login_manager.user_loader
-def loadUser(accountUser_id):
-    return accountUser.query.get(int(accountUser_id))
