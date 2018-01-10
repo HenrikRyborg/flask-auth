@@ -11,7 +11,13 @@ class registerAccountForm(FlaskForm):
     confirmPassword = PasswordField('Confirm Password')
     submit = SubmitField('Register')
 
-    def validateAccount(self, field):
+    def validate_password(self, field):
+        if len(field.data) < 6:
+            raise ValidationError('password must be at least 6 characters')
+
+    def validate_accountName(self, field):
+        if len(field.data) > 20:
+            raise ValidationError('Name must be less than 20 characters')
         if account.query.filter_by(name=field.data).first():
             raise ValidationError('Account is already in use.')
 

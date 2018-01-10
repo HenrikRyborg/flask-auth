@@ -10,6 +10,8 @@ from ..models import accountUser, user, account
 @auth.route('/registerAccount', methods=['GET', 'POST'])
 def registerAccountView():
     form = registerAccountForm()
+    if form.validate_on_submit():
+        print('hej')
     
     return render_template('auth/registerAccount.html', form=form, title='Register')
 
