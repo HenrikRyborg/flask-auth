@@ -6,11 +6,19 @@ accountUserRoles = db.Table('accountUserRoles',
     db.Column('accountUserID', db.Integer, db.ForeignKey('accountUser.id'), primary_key=True)
 )
 
+accountUserGroups = db.Table('accountUserGroups',
+    db.Column('groupID', db.Integer, db.ForeignKey('group.id'), primary_key=True),
+    db.Column('accountUserID', db.Integer, db.ForeignKey('accountUser.id'), primary_key=True)
+)
+
 class account(db.Model):
     __tablename__ = 'account'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60), unique=True, nullable=False)
+
+    def __repr__(self):
+        return '<Account %r>' % self.name
 
 class accountUser(db.Model):
     __tablename__ = 'accountUser'
@@ -18,11 +26,18 @@ class accountUser(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    account = db.relationship('account', backref=db.backref('accountUsers', lazy=True))
     userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('user', backref=db.backref('accountUsers', lazy=True))
     passwordHash = db.Column(db.String(128), nullable=False)
     isAdmin = db.Column(db.Boolean, default=False)
+    departmentID = db.Column(db.Integer, db.ForeignKey('department.id'))
+    department = db.relationship('department', backref=db.backref('accountUsers', lazy=True))
 
     roles = db.relationship('role', secondary=accountUserRoles, lazy='subquery',
+                            backref=db.backref('accountUsers', lazy=True))
+
+    groups = db.relationship('group', secondary=accountUserGroups, lazy='subquery',
                             backref=db.backref('accountUsers', lazy=True))
 
     @property
@@ -53,8 +68,10 @@ class user(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(60), unique=True, nullable=False)
-    firstName = db.Column(db.String(60))
-    lastName = db.Column(db.String(60))
+    name = db.Column(db.String(60))
+
+    def __repr__(self):
+        return '<User %r>' % self.name
 
 class role(db.Model):
     __tablename__ = 'role'
@@ -62,6 +79,9 @@ class role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
 
 class department(db.Model):
     __tablename__ = 'department'
@@ -71,6 +91,9 @@ class department(db.Model):
     name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
 
+    def __repr__(self):
+        return '<Department %r>' % self.name
+
 class group(db.Model):
     __tablename__ = 'group'
 
@@ -78,3 +101,10 @@ class group(db.Model):
     accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
     name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(200))
+
+    def __repr__(self):
+        return '<Group %r>' % self.name
+
+@login_manager.user_loader
+def load_user(id):
+    return accountUser.query.get(int(id))
