@@ -2,16 +2,15 @@ from flask import flash, redirect, render_template, url_for
 from flask_login import current_user, login_user, logout_user
 
 from . import auth
-from .forms import registerAccountForm, loginForm, assignUsersToRoleForm
+from .forms import registerAccountForm, loginForm
 from .. import db
-from ..models import accountUser, user, account, role
+from ..models import accountUser, user, account
 # from ..models import 
 
 @auth.route('/registerAccount', methods=['GET', 'POST'])
 def registerAccountView():
     form = registerAccountForm()
-    if form.validate_on_submit():
-        adminRole = role.query.filter_by(name='admin').first()         
+    if form.validate_on_submit():            
         
         acc = account.query.filter_by(name=form.accountName.data).first()        
         if not acc:
@@ -27,8 +26,8 @@ def registerAccountView():
             accUsr = accountUser(accountID=acc.id,
                                  userID=usr.id,
                                  password=form.password.data,
-                                 isAdmin = True)
-            accUsr.roles.append(adminRole)
+                                 isAdmin = True,
+                                 isWriter = True)
             db.session.add(accUsr)
             db.session.commit()
             flash('Account successfully created, please log in')

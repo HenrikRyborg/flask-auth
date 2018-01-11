@@ -1,11 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login_manager
 
-accountUserRoles = db.Table('accountUserRoles',
-    db.Column('roleID', db.Integer, db.ForeignKey('role.id'), primary_key=True),
-    db.Column('accountUserID', db.Integer, db.ForeignKey('accountUser.id'), primary_key=True)
-)
-
 accountUserGroups = db.Table('accountUserGroups',
     db.Column('groupID', db.Integer, db.ForeignKey('group.id'), primary_key=True),
     db.Column('accountUserID', db.Integer, db.ForeignKey('accountUser.id'), primary_key=True)
@@ -30,12 +25,12 @@ class accountUser(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('user', backref=db.backref('accountUsers', lazy=True))
     passwordHash = db.Column(db.String(128), nullable=False)
+    isSiteAdmin = db.Column(db.Boolean, default=False)
     isAdmin = db.Column(db.Boolean, default=False)
+    isWriter = db.Column(db.Boolean, default=False)
+    isReader = db.Column(db.Boolean, default=True)
     departmentID = db.Column(db.Integer, db.ForeignKey('department.id'))
     department = db.relationship('department', backref=db.backref('accountUsers', lazy=True))
-
-    roles = db.relationship('role', secondary=accountUserRoles, lazy='subquery',
-                            backref=db.backref('accountUsers', lazy=True))
 
     groups = db.relationship('group', secondary=accountUserGroups, lazy='subquery',
                             backref=db.backref('accountUsers', lazy=True))
@@ -72,16 +67,6 @@ class user(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.name
-
-class role(db.Model):
-    __tablename__ = 'role'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60), unique=True, nullable=False)
-    description = db.Column(db.String(200))
-
-    def __repr__(self):
-        return '<Role %r>' % self.name
 
 class department(db.Model):
     __tablename__ = 'department'

@@ -30,16 +30,6 @@ class inviteUserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Invite')
 
-class assignRolesToUserForm(FlaskForm):
-    user = SelectField('User', choices=[], validators=[DataRequired()])
-    role = SelectMultipleField('Role', choices=[], validators=[DataRequired()])
-    submit = SubmitField('Assign')
-
-class assignUsersToRoleForm(FlaskForm):
-    role = SelectField('Role', choices=[], validators=[DataRequired()])
-    users = SelectMultipleField('Users', choices=[], validators=[DataRequired()])
-    submit = SubmitField('Assign')
-
 class assignGroupsToUserForm(FlaskForm):
     user = SelectField('User', choices=[], validators=[DataRequired()])
     group = SelectMultipleField('Group', choices=[], validators=[DataRequired()])
