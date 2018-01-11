@@ -4,14 +4,37 @@ from flask_login import current_user, login_user, logout_user
 from . import auth
 from .forms import registerAccountForm, loginForm 
 from .. import db
-from ..models import accountUser, user, account
+from ..models import accountUser, user, account, role
 # from ..models import 
 
 @auth.route('/registerAccount', methods=['GET', 'POST'])
 def registerAccountView():
     form = registerAccountForm()
     if form.validate_on_submit():
-        print('hej')
+        adminRole = role.query.filter_by(name='admin').first()         
+        
+        acc = account.query.filter_by(name=form.accountName.data).first()        
+        if not acc:
+            acc = account(name=form.accountName.data)
+            db.session.add(acc)
+            usr = user.query.filter_by(email=form.email.data).first()
+            if not usr:
+                usr = user(email=form.email.data)
+                db.session.add(usr)  
+
+            usr = user.query.filter_by(email=form.email.data).first()
+            acc = account.query.filter_by(name=form.accountName.data).first()
+            accUsr = accountUser(accountID=acc.id,
+                                 userID=usr.id,
+                                 password=form.password.data,
+                                 isAdmin = True)
+            accUsr.roles.append(adminRole)
+            db.session.add(accUsr)
+            db.session.commit()
+            flash('Account successfully created, please log in')
+            return redirect(url_for('auth.loginView'))                                 
+        else:
+            flash('Account already in use')
     
     return render_template('auth/registerAccount.html', form=form, title='Register')
 

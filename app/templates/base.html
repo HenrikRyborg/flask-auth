@@ -1,3 +1,4 @@
+{% import "bootstrap/utils.html" as utils %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,9 +34,10 @@
         </div>
     </nav>
     <div class="wrapper">
-      {% block body %}
-      {% endblock %}
-      <div class="push"></div>
+        {{ utils.flashed_messages() }}
+        {% block body %}
+        {% endblock %}
+        <div class="push"></div>
     </div>
     <footer>
         <div class="container">
