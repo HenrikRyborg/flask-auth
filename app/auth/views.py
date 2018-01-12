@@ -44,24 +44,26 @@ def loginView():
     if current_user.is_authenticated:
         return redirect(url_for('indexBP.indexView'))
 
-    if not current_user.isValidated:
-        flash('Please validate your account')
-
-    if current_user.isDeactivated:
-        flash('Your user account has been deactivated, please contact your local administrator.')
 
     form = loginForm()
     if form.validate_on_submit():
-        acc = account.query.filter_by(name=form.accountName.data).first()
-        usr = user.query.filter_by(email=form.email.data).first()
-        accUsr = accountUser.query.filter_by(accountID=acc.id,
-                                             userID=usr.id,).first()
-        if accUsr is None or not accUsr.verify_password(form.password.data):
-            flash('Invalid username or password')
-            return redirect(url_for('auth.loginView'))
+        if not current_user.isValidated:
+            flash('Please validate your account')
 
-        login_user(accUsr)
-        return redirect(url_for('indexBP.indexView'))                                             
+        elif current_user.isDeactivated:
+            flash('Your user account has been deactivated, please contact your local administrator.')
+
+        else:
+            acc = account.query.filter_by(name=form.accountName.data).first()
+            usr = user.query.filter_by(email=form.email.data).first()
+            accUsr = accountUser.query.filter_by(accountID=acc.id,
+                                                userID=usr.id,).first()
+            if accUsr is None or not accUsr.verify_password(form.password.data):
+                flash('Invalid username or password')
+                return redirect(url_for('auth.loginView'))
+
+            login_user(accUsr)
+            return redirect(url_for('indexBP.indexView'))                                             
     
     return render_template('auth/login.html', form=form, title='Login')
 
