@@ -13,6 +13,7 @@ manager.add_command('db', MigrateCommand)
 @manager.command
 def testDB():
     from app.models import account, user, accountUser
+    import uuid
 
     if not account.query.filter_by(name='sysAdmin').first():
         acc = account(name='sysAdmin')
@@ -35,6 +36,7 @@ def testDB():
                              isSiteAdmin=True,
                              isAdmin=True,
                              isWriter=True,
+                             uuid=str(uuid.uuid4()),
                              password='password')
         db.session.add(accUsr)
         db.session.commit()

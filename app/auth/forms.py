@@ -24,7 +24,13 @@ class registerAccountForm(FlaskForm):
 class setPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirmPassword')])
     confirmPassword = PasswordField('Confirm Password')
-    submit = SubmitField('Register')
+    submit = SubmitField('Ok')
+
+class changePasswordForm(FlaskForm):
+    oldPassword = PasswordField('Current password', validators=[DataRequired())
+    password = PasswordField('New Password', validators=[DataRequired(), EqualTo('confirmPassword')])
+    confirmPassword = PasswordField('Confirm New Password')
+    submit = SubmitField('Ok')
 
 class inviteUserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])

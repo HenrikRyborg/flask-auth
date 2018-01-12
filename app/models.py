@@ -20,6 +20,7 @@ class accountUser(db.Model):
     __table_args__ = (db.UniqueConstraint("accountID", "userID"),)
 
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(), nullable=False)
     accountID = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
     account = db.relationship('account', backref=db.backref('accountUsers', lazy=True))
     userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -29,6 +30,8 @@ class accountUser(db.Model):
     isAdmin = db.Column(db.Boolean, default=False)
     isWriter = db.Column(db.Boolean, default=False)
     isReader = db.Column(db.Boolean, default=True)
+    isValidated = db.Column(db.Boolean, default=False)
+    isDeactivated = db.Column(db.Boolean, default=False)
     departmentID = db.Column(db.Integer, db.ForeignKey('department.id'))
     department = db.relationship('department', backref=db.backref('accountUsers', lazy=True))
 

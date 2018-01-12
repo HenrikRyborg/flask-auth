@@ -1,0 +1,29 @@
+Auth:
+    Implement email validation on account registration
+    change password feature
+    resend validation email
+    forgot password feature
+
+Admin
+    Create admin blueprint
+    Admin overview
+        Browse users / departments / groups
+    Build user management view
+        View users
+        Invite users
+        Activate/deactivate users
+        Remove users
+        Manage user roles
+        Manage user department
+        Manage user groups
+    Build department CRUD
+    Build group CRUD
+
+User profile
+    Create user blueprint
+    Build profile view
+        Change profile data
+            Name
+            Email address
+            If user on different accounts, have user select active account
+

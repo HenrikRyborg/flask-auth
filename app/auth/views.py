@@ -1,8 +1,9 @@
 from flask import flash, redirect, render_template, url_for
 from flask_login import current_user, login_user, logout_user
+import uuid
 
 from . import auth
-from .forms import registerAccountForm, loginForm
+from .forms import registerAccountForm, loginForm, changePasswordForm
 from .. import db
 from ..models import accountUser, user, account
 # from ..models import 
@@ -27,7 +28,8 @@ def registerAccountView():
                                  userID=usr.id,
                                  password=form.password.data,
                                  isAdmin = True,
-                                 isWriter = True)
+                                 isWriter = True,
+                                 uuid=str(uuid.uuid4()))
             db.session.add(accUsr)
             db.session.commit()
             flash('Account successfully created, please log in')
@@ -41,6 +43,13 @@ def registerAccountView():
 def loginView():
     if current_user.is_authenticated:
         return redirect(url_for('indexBP.indexView'))
+
+    if not current_user.isValidated:
+        flash('Please validate your account')
+
+    if current_user.isDeactivated:
+        flash('Your user account has been deactivated, please contact your local administrator.')
+
     form = loginForm()
     if form.validate_on_submit():
         acc = account.query.filter_by(name=form.accountName.data).first()
@@ -55,6 +64,11 @@ def loginView():
         return redirect(url_for('indexBP.indexView'))                                             
     
     return render_template('auth/login.html', form=form, title='Login')
+
+@auth.route('/changePassword')
+def changePasswordView():
+    form = changePasswordForm()
+    return render_template('auth/changePassword.html', form=form)
 
 @auth.route('/logout')
 def logoutView():
