@@ -44,11 +44,13 @@ def loginView():
     if current_user.is_authenticated:
         return redirect(url_for('indexBP.indexView'))
 
-
     form = loginForm()
     if form.validate_on_submit():
         if not current_user.isValidated:
             flash('Please validate your account')
+
+        elif current_user.isLocked:
+            flash('Due to multiple failed login attempts your user account has been locked, please contact your local administrator.')
 
         elif current_user.isDeactivated:
             flash('Your user account has been deactivated, please contact your local administrator.')
@@ -59,8 +61,16 @@ def loginView():
             accUsr = accountUser.query.filter_by(accountID=acc.id,
                                                 userID=usr.id,).first()
             if accUsr is None or not accUsr.verify_password(form.password.data):
-                flash('Invalid username or password')
-                return redirect(url_for('auth.loginView'))
+                if accUsr.loginAttempts < 5:
+                    accUsr.loginAttempts = accUsr.loginAttempts + 1
+                    db.session.commit()
+                    flash('Invalid username or password, you have {} tries left!'.format(5-accUsr.loginAttempts))
+                else:
+                    accUsr.loginAttempts = accUsr.loginAttempts + 1
+                    accUsr.isLocked = True
+                    db.session.commit()
+                    flash('Due to multiple failed login attempts your user account has been locked, please contact your local administrator.')
+                    return redirect(url_for('auth.loginView'))
 
             login_user(accUsr)
             return redirect(url_for('indexBP.indexView'))                                             

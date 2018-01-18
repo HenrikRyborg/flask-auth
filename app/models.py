@@ -31,6 +31,8 @@ class accountUser(db.Model):
     isWriter = db.Column(db.Boolean, default=False)
     isReader = db.Column(db.Boolean, default=True)
     isValidated = db.Column(db.Boolean, default=False)
+    loginAttempts = db.Column(db.Integer)
+    isLocked = db.Column(db.Boolean, default=False)
     isDeactivated = db.Column(db.Boolean, default=False)
     departmentID = db.Column(db.Integer, db.ForeignKey('department.id'))
     department = db.relationship('department', backref=db.backref('accountUsers', lazy=True))

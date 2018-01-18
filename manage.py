@@ -37,7 +37,8 @@ def testDB():
                              isAdmin=True,
                              isWriter=True,
                              uuid=str(uuid.uuid4()),
-                             password='password')
+                             password='password',
+                             loginAttempts = 0)
         db.session.add(accUsr)
         db.session.commit()
         print('accountUser added')
